@@ -526,13 +526,16 @@ func (r *RuneBuffer) getBackspaceSequence() []byte {
 		sep[i] = true
 	}
 	var buf []byte
+	offset := runes.WidthAll(r.buf)
 	for i := len(r.buf); i > r.idx; i-- {
 		// move input to the left of one
-		buf = append(buf, '\b')
-		if sep[i] {
+		w := runes.Width(r.buf[i-1])
+		buf = append(buf, []byte(strings.Repeat("\b", w))...)
+		if sep[offset] {
 			// up one line, go to the start of the line and move cursor right to the end (r.width)
 			buf = append(buf, "\033[A\r"+"\033["+strconv.Itoa(r.width)+"C"...)
 		}
+		offset -= w
 	}
 
 	return buf
